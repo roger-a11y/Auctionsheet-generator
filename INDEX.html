@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Vehicle Upload Sheet Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        
+        .required::after {
+            content: " *";
+            color: var(--danger);
+        }
+        
+        .image-upload-section {
+            margin-top: 30px;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .image-upload-box {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .image-upload-box:hover {
+            border-color: var(--primary);
+        }
+        
+        .image-upload-box i {
+            font-size: 30px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+        
+        .image-upload-box span {
+            font-size: 14px;
+            color: #777;
+            text-align: center;
+        }
+        
+        .image-upload-box input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .error {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .image-number {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: var(--primary);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .datetime-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .datetime-group .form-group {
+            flex: 1;
+        }
+        
+        .entries-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .entries-table th, 
+        .entries-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .entries-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .entries-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .entries-table tr:hover {
+            background-color: #e9f7fe;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .edit-btn {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .remove-btn {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .no-entries {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        .price-input {
+            position: relative;
+        }
+        
+        .price-input::before {
+            content: "₹";
+            position: absolute;
+            left: 10px;
+            top: 38px;
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .price-input input {
+            padding-left: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .image-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .datetime-group {
+                flex-direction: column;
+            }
+            
+            .entries-table {
+                font-size: 14px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Auction Vehicle Upload Sheet Generator</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="form">Add Vehicle</div>
+            <div class="tab" data-tab="entries">View Entries (<span id="entriesCount">0</span>)</div>
+        </div>
+        
+        <div class="tab-content active" id="formTab">
+            <form id="auctionForm">
+                <div class="form-section">
+                    <h2 class="section-title">Vehicle Information</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="state" class="required">State</label>
+                            <select id="state" name="state" required>
+                                <option value="">Select State</option>
+                                <option value="New Delhi">New Delhi</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                            </select>
+                            <div class="error" id="stateError">Please select state</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="city" class="required">City</label>
+                            <select id="city" name="city" required>
+                                <option value="">Select City</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Mumbai">Mumbai</option>
+                            </select>
+                            <div class="error" id="cityError">Please select city</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sellerName" class="required">Seller Name</label>
+                            <input type="text" id="sellerName" name="sellerName" required>
+                            <div class="error" id="sellerNameError">Please enter seller name</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="vehicleType" class="required">Vehicle Type</label>
+                            <select id="vehicleType" name="vehicleType" required>
+                                <option value="">Select Vehicle Type</option>
+                                <option value="Car">Car</option>
+                                <option value="Motorcycle">Motorcycle</option>
+                                <option value="Truck">Truck</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Bus">Bus</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="error" id="vehicleTypeError">Please select vehicle type</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="make" class="required">Make</label>
+                            <select id="make" name="make" required>
+                                <option value="">Select Make</option>
+                                <option value="Maruti">Maruti</option>
+                                <option value="Honda">Honda</option>
+                            </select>
+                            <div class="error" id="makeError">Please select make</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="model" class="required">Model</label>
+                            <select id="model" name="model" required>
+                                <option value="">Select Model</option>
+                                <option value="Ciaz">Ciaz</option>
+                                <option value="Swift">Swift</option>
+                                <option value="Elevate">Elevate</option>
+                                <option value="Honda City">Honda City</option>
+                            </select>
+                            <div class="error" id="modelError">Please select model</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="version" class="required">Version</label>
+                            <select id="version" name="version" required>
+                                <option value="">Select Version</option>
+                                <option value="ZXI">ZXI</option>
+                                <option value="EXI">EXI</option>
+                            </select>
+                            <div class="error" id="versionError">Please select version</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mileage" class="required">Mileage (km/l)</label>
+                            <input type="number" id="mileage" name="mileage" min="0" required>
+                            <div class="error" id="mileageError">Please enter mileage</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mfgYear" class="required">Manufacturing Year</label>
+                            <input type="number" id="mfgYear" name="mfgYear" min="1900" max="2099" required>
+                            <div class="error" id="mfgYearError">Please enter manufacturing year</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="regYear" class="required">Registration Year</label>
+                            <input type="number" id="regYear" name="regYear" min="1900" max="2099" required>
+                            <div class="error" id="regYearError">Please enter registration year</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="rcBookStatus" class="required">RC Book Status</label>
+                            <select id="rcBookStatus" name="rcBookStatus" required>
+                                <option value="">Select RC Book Status</option>
+                                <option value="Available">Available</option>
+                                <option value="Not Available">Not Available</option>
+                                <option value="Applied">Applied</option>
+                                <option value="Lost">Lost</option>
+                            </select>
+                            <div class="error" id="rcBookStatusError">Please select RC book status</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fuelType" class="required">Fuel Type</label>
+                            <select id="fuelType" name="fuelType" required>
+                                <option value="">Select Fuel Type</option>
+                                <option value="Petrol">Petrol</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Electric">Electric</option>
+                                <option value="Hybrid">Hybrid</option>
+                                <option value="CNG">CNG</option>
+                                <option value="LPG">LPG</option>
+                            </select>
+                            <div class="error" id="fuelTypeError">Please select fuel type</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="color" class="required">Color</label>
+                            <input type="text" id="color" name="color" required>
+                            <div class="error" id="colorError">Please enter color</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="odometer" class="required">Odometer (km)</label>
+                            <input type="number" id="odometer" name="odometer" min="0" required>
+                            <div class="error" id="odometerError">Please enter odometer reading</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="noOfOwners" class="required">Number of Owners</label>
+                            <input type="number" id="noOfOwners" name="noOfOwners" min="1" required>
+                            <div class="error" id="noOfOwnersError">Please enter number of owners</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="registrationNumber" class="required">Registration Number</label>
+                            <input type="text" id="registrationNumber" name="registrationNumber" required>
+                            <div class="error" id="registrationNumberError">Please enter registration number</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="insuranceValidity" class="required">Insurance Validity</label>
+                            <input type="date" id="insuranceValidity" name="insuranceValidity" required>
+                            <div class="error" id="insuranceValidityError">Please select insurance validity date</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gearTransmission" class="required">Gear Transmission</label>
+                            <select id="gearTransmission" name="gearTransmission" required>
+                                <option value="">Select Gear Transmission</option>
+                                <option value="Manual">Manual</option>
+                                <option value="Automatic">Automatic</option>
+                                <option value="Semi-Automatic">Semi-Automatic</option>
+                                <option value="CVT">CVT</option>
+                            </select>
+                            <div class="error" id="gearTransmissionError">Please select gear transmission</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="insuranceType" class="required">Insurance Type</label>
+                            <select id="insuranceType" name="insuranceType" required>
+                                <option value="">Select Insurance Type</option>
+                                <option value="Comprehensive">Comprehensive</option>
+                                <option value="Third Party">Third Party</option>
+                                <option value="Third Party Fire and Theft">Third Party Fire and Theft</option>
+                                <option value="Not Insured">Not Insured</option>
+                            </select>
+                            <div class="error" id="insuranceTypeError">Please select insurance type</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="yardDetails" class="required">Yard Details</label>
+                            <textarea id="yardDetails" name="yardDetails" rows="3" required></textarea>
+                            <div class="error" id="yardDetailsError">Please enter yard details</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2 class="section-title">Auction Details</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="startDate" class="required">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" required>
+                            <div class="error" id="startDateError">Please select start date</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="startTime" class="required">Start Time</label>
+                            <input type="time" id="startTime" name="startTime" required>
+                            <div class="error" id="startTimeError">Please select start time</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="endDate" class="required">End Date</label>
+                            <input type="date" id="endDate" name="endDate" required>
+                            <div class="error" id="endDateError">Please select end date</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="endTime" class="required">End Time</label>
+                            <input type="time" id="endTime" name="endTime" required>
+                            <div class="error" id="endTimeError">Please select end time</div>
+                        </div>
+                        
+                        <div class="form-group price-input">
+                            <label for="startPrice" class="required">Start Price (₹)</label>
+                            <input type="number" id="startPrice" name="startPrice" min="0" step="0.01" required>
+                            <div class="error" id="startPriceError">Please enter start price</div>
+                        </div>
+                        
+                        <div class="form-group price-input">
+                            <label for="reservePrice" class="required">Reserve Price (₹)</label>
+                            <input type="number" id="reservePrice" name="reservePrice" min="0" step="0.01" required>
+                            <div class="error" id="reservePriceError">Please enter reserve price</div>
+                        </div>
+                        
+                        <div class="form-group price-input">
+                            <label for="bidIncrement" class="required">Bid Increment (₹)</label>
+                            <input type="number" id="bidIncrement" name="bidIncrement" min="0" step="0.01" required>
+                            <div class="error" id="bidIncrementError">Please enter bid increment</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="internalRemarks" class="required">Internal Remarks</label>
+                            <textarea id="internalRemarks" name="internalRemarks" rows="3" required></textarea>
+                            <div class="error" id="internalRemarksError">Please enter internal remarks</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="parkingLocation" class="required">Parking Location</label>
+                            <input type="text" id="parkingLocation" name="parkingLocation" required>
+                            <div class="error" id="parkingLocationError">Please enter parking location</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="paymentTerms" class="required">Payment Terms</label>
+                            <select id="paymentTerms" name="paymentTerms" required>
+                                <option value="">Select Payment Terms</option>
+                                <option value="Full Payment Required">Full Payment Required</option>
+                                <option value="Partial Payment Accepted">Partial Payment Accepted</option>
+                                <option value="Financing Available">Financing Available</option>
+                            </select>
+                            <div class="error" id="paymentTermsError">Please select payment terms</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="image-upload-section">
+                    <h2 class="section-title">Vehicle Images (6 required)</h2>
+                    <div class="image-grid">
+                        <!-- Six image upload boxes -->
+                        <div class="image-upload-box" id="imageBox1">
+                            <div class="image-number">1</div>
+                            <i>📷</i>
+                            <span>Front View</span>
+                            <img class="image-preview" id="preview1">
+                            <input type="file" id="image1" name="image1" accept="image/*" required>
+                        </div>
+                        
+                        <div class="image-upload-box" id="imageBox2">
+                            <div class="image-number">2</div>
+                            <i>📷</i>
+                            <span>Rear View</span>
+                            <img class="image-preview" id="preview2">
+                            <input type="file" id="image2" name="image2" accept="image/*" required>
+                        </div>
+                        
+                        <div class="image-upload-box" id="imageBox3">
+                            <div class="image-number">3</div>
+                            <i>📷</i>
+                            <span>Side View</span>
+                            <img class="image-preview" id="preview3">
+                            <input type="file" id="image3" name="image3" accept="image/*" required>
+                        </div>
+                        
+                        <div class="image-upload-box" id="imageBox4">
+                            <div class="image-number">4</div>
+                            <i>📷</i>
+                            <span>Interior</span>
+                            <img class="image-preview" id="preview4">
+                            <input type="file" id="image4" name="image4" accept="image/*" required>
+                        </div>
+                        
+                        <div class="image-upload-box" id="imageBox5">
+                            <div class="image-number">5</div>
+                            <i>📷</i>
+                            <span>Engine</span>
+                            <img class="image-preview" id="preview5">
+                            <input type="file" id="image5" name="image5" accept="image/*" required>
+                        </div>
+                        
+                        <div class="image-upload-box" id="imageBox6">
+                            <div class="image-number">6</div>
+                            <i>📷</i>
+                            <span>Dashboard</span>
+                            <img class="image-preview" id="preview6">
+                            <input type="file" id="image6" name="image6" accept="image/*" required>
+                        </div>
+                    </div>
+                    <div class="error" id="imagesError">Please upload all 6 images</div>
+                </div>
+                
+                <button type="button" id="addEntryBtn" class="btn btn-primary">Add Vehicle Entry</button>
+                <button type="button" id="viewEntriesBtn" class="btn btn-success">View All Entries</button>
+            </form>
+        </div>
+        
+        <div class="tab-content" id="entriesTab">
+            <h2 class="section-title">Vehicle Entries</h2>
+            
+            <div id="entriesContainer">
+                <div class="no-entries" id="noEntriesMessage">No vehicle entries added yet.</div>
+                <table class="entries-table" id="entriesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Make & Model</th>
+                            <th>Registration No.</th>
+                            <th>Seller Name</th>
+                            <th>City</th>
+                            <th>Start Price (₹)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entriesTableBody">
+                        <!-- Entries will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button type="button" id="addNewBtn" class="btn btn-primary">Add New Vehicle</button>
+                <button type="button" id="generateExcelBtn" class="btn btn-success" disabled>Generate Excel Sheet</button>
+                <button type="button" id="clearAllBtn" class="btn btn-danger" style="display: none;">Clear All Entries</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('auctionForm');
+            const addEntryBtn = document.getElementById('addEntryBtn');
+            const viewEntriesBtn = document.getElementById('viewEntriesBtn');
+            const addNewBtn = document.getElementById('addNewBtn');
+            const generateExcelBtn = document.getElementById('generateExcelBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const entriesCount = document.getElementById('entriesCount');
+            const noEntriesMessage = document.getElementById('noEntriesMessage');
+            const entriesTable = document.getElementById('entriesTable');
+            const entriesTableBody = document.getElementById('entriesTableBody');
+            
+            const imageInputs = [];
+            const imagePreviews = [];
+            const imageBoxes = [];
+            
+            // Initialize image arrays
+            for (let i = 1; i <= 6; i++) {
+                imageInputs.push(document.getElementById(`image${i}`));
+                imagePreviews.push(document.getElementById(`preview${i}`));
+                imageBoxes.push(document.getElementById(`imageBox${i}`));
+            }
+            
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show active tab content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `${tabId}Tab`) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Set up image preview functionality
+            imageInputs.forEach((input, index) => {
+                input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreviews[index].src = e.target.result;
+                            imagePreviews[index].style.display = 'block';
+                            imageBoxes[index].querySelector('i').style.display = 'none';
+                            imageBoxes[index].querySelector('span').style.display = 'none';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+            
+            // Store all entries
+            let vehicleEntries = [];
+            
+            // Add entry button click handler
+            addEntryBtn.addEventListener('click', function() {
+                if (validateForm()) {
+                    const formData = collectFormData();
+                    vehicleEntries.push(formData);
+                    updateEntriesUI();
+                    resetForm();
+                    alert('Vehicle entry added successfully!');
+                }
+            });
+            
+            // View entries button click handler
+            viewEntriesBtn.addEventListener('click', function() {
+                tabs[1].click(); // Switch to entries tab
+            });
+            
+            // Add new button click handler
+            addNewBtn.addEventListener('click', function() {
+                tabs[0].click(); // Switch to form tab
+            });
+            
+            // Generate Excel button click handler
+            generateExcelBtn.addEventListener('click', function() {
+                generateExcel();
+            });
+            
+            // Clear all button click handler
+            clearAllBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all entries?')) {
+                    vehicleEntries = [];
+                    updateEntriesUI();
+                }
+            });
+            
+            // Validate the form
+            function validateForm() {
+                // Reset error messages
+                const errorElements = document.querySelectorAll('.error');
+                errorElements.forEach(error => error.style.display = 'none');
+                
+                let isValid = true;
+                
+                // Validate all required fields
+                const requiredFields = [
+                    'state', 'city', 'sellerName', 'vehicleType', 'make', 'model', 
+                    'version', 'mileage', 'mfgYear', 'regYear', 'rcBookStatus', 
+                    'fuelType', 'color', 'odometer', 'noOfOwners', 'registrationNumber', 
+                    'insuranceValidity', 'gearTransmission', 'insuranceType', 'yardDetails',
+                    'startDate', 'startTime', 'endDate', 'endTime', 'startPrice', 
+                    'reservePrice', 'bidIncrement', 'internalRemarks', 'parkingLocation', 
+                    'paymentTerms'
+                ];
+                
+                requiredFields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (!element.value.trim()) {
+                        document.getElementById(`${field}Error`).style.display = 'block';
+                        isValid = false;
+                    }
+                });
+                
+                // Validate numeric fields
+                const numericFields = ['mileage', 'mfgYear', 'regYear', 'odometer', 'noOfOwners', 'startPrice', 'reservePrice', 'bidIncrement'];
+                
+                numericFields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element.value && parseFloat(element.value) <= 0) {
+                        document.getElementById(`${field}Error`).style.display = 'block';
+                        isValid = false;
+                    }
+                });
+                
+                // Validate year fields
+                const currentYear = new Date().getFullYear();
+                const mfgYear = document.getElementById('mfgYear');
+                const regYear = document.getElementById('regYear');
+                
+                if (mfgYear.value && (parseInt(mfgYear.value) < 1900 || parseInt(mfgYear.value) > currentYear)) {
+                    document.getElementById('mfgYearError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                if (regYear.value && (parseInt(regYear.value) < 1900 || parseInt(regYear.value) > currentYear + 1)) {
+                    document.getElementById('regYearError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate date fields
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                
+                if (startDate && endDate && startDate >= endDate) {
+                    document.getElementById('endDateError').textContent = 'End date must be after start date';
+                    document.getElementById('endDateError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate images
+                let imagesValid = true;
+                imageInputs.forEach(input => {
+                    if (!input.files[0]) {
+                        imagesValid = false;
+                    }
+                });
+                
+                if (!imagesValid) {
+                    document.getElementById('imagesError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            // Collect form data
+            function collectFormData() {
+                const formData = {
+                    state: document.getElementById('state').value,
+                    city: document.getElementById('city').value,
+                    sellerName: document.getElementById('sellerName').value,
+                    vehicleType: document.getElementById('vehicleType').value,
+                    make: document.getElementById('make').value,
+                    model: document.getElementById('model').value,
+                    version: document.getElementById('version').value,
+                    mileage: document.getElementById('mileage').value,
+                    mfgYear: document.getElementById('mfgYear').value,
+                    regYear: document.getElementById('regYear').value,
+                    rcBookStatus: document.getElementById('rcBookStatus').value,
+                    fuelType: document.getElementById('fuelType').value,
+                    color: document.getElementById('color').value,
+                    odometer: document.getElementById('odometer').value,
+                    noOfOwners: document.getElementById('noOfOwners').value,
+                    registrationNumber: document.getElementById('registrationNumber').value,
+                    insuranceValidity: document.getElementById('insuranceValidity').value,
+                    gearTransmission: document.getElementById('gearTransmission').value,
+                    insuranceType: document.getElementById('insuranceType').value,
+                    yardDetails: document.getElementById('yardDetails').value,
+                    startDate: document.getElementById('startDate').value,
+                    startTime: document.getElementById('startTime').value,
+                    endDate: document.getElementById('endDate').value,
+                    endTime: document.getElementById('endTime').value,
+                    startPrice: document.getElementById('startPrice').value,
+                    reservePrice: document.getElementById('reservePrice').value,
+                    bidIncrement: document.getElementById('bidIncrement').value,
+                    internalRemarks: document.getElementById('internalRemarks').value,
+                    parkingLocation: document.getElementById('parkingLocation').value,
+                    paymentTerms: document.getElementById('paymentTerms').value,
+                    images: []
+                };
+                
+                // Get image file names
+                imageInputs.forEach(input => {
+                    if (input.files[0]) {
+                        formData.images.push(input.files[0].name);
+                    }
+                });
+                
+                return formData;
+            }
+            
+            // Reset the form
+            function resetForm() {
+                document.getElementById('auctionForm').reset();
+                
+                // Reset image previews
+                imagePreviews.forEach(preview => {
+                    preview.style.display = 'none';
+                });
+                
+                imageBoxes.forEach(box => {
+                    box.querySelector('i').style.display = 'block';
+                    box.querySelector('span').style.display = 'block';
+                });
+                
+                // Reset error messages
+                const errorElements = document.querySelectorAll('.error');
+                errorElements.forEach(error => error.style.display = 'none');
+            }
+            
+            // Update entries UI
+            function updateEntriesUI() {
+                const count = vehicleEntries.length;
+                entriesCount.textContent = count;
+                
+                if (count === 0) {
+                    noEntriesMessage.style.display = 'block';
+                    entriesTable.style.display = 'none';
+                    generateExcelBtn.disabled = true;
+                    clearAllBtn.style.display = 'none';
+                } else {
+                    noEntriesMessage.style.display = 'none';
+                    entriesTable.style.display = 'table';
+                    generateExcelBtn.disabled = false;
+                    clearAllBtn.style.display = 'inline-block';
+                    
+                    // Clear table body
+                    entriesTableBody.innerHTML = '';
+                    
+                    // Add entries to table
+                    vehicleEntries.forEach((entry, index) => {
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td>${entry.make} ${entry.model}</td>
+                            <td>${entry.registrationNumber}</td>
+                            <td>${entry.sellerName}</td>
+                            <td>${entry.city}</td>
+                            <td>₹${parseFloat(entry.startPrice).toLocaleString('en-IN')}</td>
+                            <td class="action-buttons">
+                                <button class="action-btn edit-btn" data-index="${index}">Edit</button>
+                                <button class="action-btn remove-btn" data-index="${index}">Remove</button>
+                            </td>
+                        `;
+                        
+                        entriesTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to action buttons
+                    document.querySelectorAll('.edit-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = this.getAttribute('data-index');
+                            editEntry(index);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.remove-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const index = this.getAttribute('data-index');
+                            removeEntry(index);
+                        });
+                    });
+                }
+            }
+            
+            // Edit entry
+            function editEntry(index) {
+                // For simplicity, we'll remove the entry and let user recreate it
+                // In a real application, you would populate the form with the entry data
+                if (confirm('To edit this entry, it will be removed and you can recreate it with changes. Continue?')) {
+                    vehicleEntries.splice(index, 1);
+                    updateEntriesUI();
+                    tabs[0].click(); // Switch to form tab
+                }
+            }
+            
+            // Remove entry
+            function removeEntry(index) {
+                if (confirm('Are you sure you want to remove this entry?')) {
+                    vehicleEntries.splice(index, 1);
+                    updateEntriesUI();
+                }
+            }
+            
+            // Generate Excel
+            function generateExcel() {
+                // Prepare data for Excel in the exact format from the template
+                const headers = [
+                    "State", "City", "Seller name", "Vehicle Type", "Make", "Model", "Version", 
+                    "Mileage", "Mfg Year", "Reg Year", "RC Book Status", "Fuel Type", "Color", 
+                    "Odometer", "No Of Owners", "Registration Number", "Insurance Validity", 
+                    "Gear Transmission", "Insurance Type", "Yard Details", "Start Date", 
+                    "Start Time", "End Date", "End Time", "Start Price", "Reserve Price", 
+                    "Bid Increment", "Interanl Remarks", "Parking location", "Payment Terms", 
+                    "Images 1", "Images 2", "Images 3", "Images 4", "Images 5", "Images 6"
+                ];
+                
+                const excelData = [headers];
+                
+                // Add all entries to the Excel data
+                vehicleEntries.forEach(entry => {
+                    const row = [
+                        entry.state,
+                        entry.city,
+                        entry.sellerName,
+                        entry.vehicleType,
+                        entry.make,
+                        entry.model,
+                        entry.version,
+                        entry.mileage,
+                        entry.mfgYear,
+                        entry.regYear,
+                        entry.rcBookStatus,
+                        entry.fuelType,
+                        entry.color,
+                        entry.odometer,
+                        entry.noOfOwners,
+                        entry.registrationNumber,
+                        entry.insuranceValidity,
+                        entry.gearTransmission,
+                        entry.insuranceType,
+                        entry.yardDetails,
+                        entry.startDate,
+                        entry.startTime,
+                        entry.endDate,
+                        entry.endTime,
+                        // Prices are stored as numbers without currency symbols for Excel
+                        entry.startPrice,
+                        entry.reservePrice,
+                        entry.bidIncrement,
+                        entry.internalRemarks,
+                        entry.parkingLocation,
+                        entry.paymentTerms,
+                        ...entry.images
+                    ];
+                    
+                    excelData.push(row);
+                });
+                
+                // Create worksheet
+                const ws = XLSX.utils.aoa_to_sheet(excelData);
+                
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Auction Vehicle Upload");
+                
+                // Generate Excel file and trigger download
+                XLSX.writeFile(wb, "Auction_Vehicle_Upload_Sheet.xlsx");
+                
+                alert(`Excel sheet generated with ${vehicleEntries.length} vehicle entries!`);
+            }
+        });
+    </script>
+</body>
+</html>
